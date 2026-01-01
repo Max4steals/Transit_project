@@ -4,6 +4,8 @@ from creationdossier import create_dossier
 from supabase import create_client
 import json
 from creationfacture import generer_facture_eden_dynamique
+from io import BytesIO
+import os
 
 app = Flask(__name__)
 CORS(
@@ -41,10 +43,12 @@ def handle_pdf():
         return make_response({"error": str(e)}, 500)
 
 
-from io import BytesIO
+
 
 @app.route("/facture/<int:facture_id>", methods=["GET"])
 def telecharger_facture(facture_id):
+    base_path = os.path.dirname(os.path.abspath(__file__))
+    chemin_entete = os.path.join(base_path, "Entete EDEN.pdf")
 
     res = (
         supabase
@@ -61,10 +65,8 @@ def telecharger_facture(facture_id):
     data = res.data["data_json"]
     numero = data["facture"]["numero"]
 
-    pdf_buffer = generer_facture_eden_dynamique(
-        "Entete EDEN.pdf",
-        data
-    )
+    pdf_buffer = generer_facture_eden_dynamique(chemin_entete, data)
+    pdf_buffer.seek(0)
 
     return send_file(
         pdf_buffer,
