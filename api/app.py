@@ -6,7 +6,14 @@ import json
 from creationfacture import generer_facture_eden_dynamique
 
 app = Flask(__name__)
-CORS(app)
+CORS(
+    app,
+    resources={r"/*": {"origins": [
+        "https://transit-project.vercel.app"
+    ]}},
+    supports_credentials=True
+)
+
     
 supabase = create_client(
     "https://xjdcffmhhiknxwcfogxr.supabase.co",
@@ -68,7 +75,3 @@ def telecharger_facture(facture_id):
     )
 
 
-
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)

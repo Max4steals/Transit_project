@@ -141,8 +141,10 @@ export default function ModifierDossier() {
         }
 
         try {
+            const API_URL = import.meta.env.VITE_API_URL;
+
             console.log("Envoi des données à Flask...");
-            const response = await fetch("http://127.0.0.1:5000/generate-pdf", {
+            const response = await fetch(`${API_URL}/generate-pdf`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

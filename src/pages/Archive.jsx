@@ -241,10 +241,12 @@ export default function SuiviPage() {
             alert("Facture non encore enregistrée");
             return;
         }
+        const API_URL = import.meta.env.VITE_API_URL;
 
         const response = await fetch(
-            `http://localhost:5000/facture/${factureId}`
+            `${API_URL}/facture/${factureId}`
         );
+
 
         if (!response.ok) {
             alert("Erreur lors du téléchargement");
