@@ -135,5 +135,7 @@ def generer_facture_eden_dynamique(fichier_entete, fichier_sortie, data):
 
     ecrivain = PdfWriter()
     ecrivain.add_page(page)
-    with open(fichier_sortie, "wb") as f_out:
-        ecrivain.write(f_out)
+    output = io.BytesIO()
+    ecrivain.write(output)
+    output.seek(0)
+    return output
