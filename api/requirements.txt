@@ -6,3 +6,4 @@ pypdf
 num2words
 qrcode
 python-dotenv
+gunicorn
