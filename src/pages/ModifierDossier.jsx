@@ -140,37 +140,48 @@ export default function ModifierDossier() {
             return;
         }
 
-        try {
-            const API_URL = import.meta.env.VITE_API_URL;
+        const API_URL = import.meta.env.VITE_API_URL;
 
-            console.log("Envoi des données à Flask...");
+        try {
             const response = await fetch(`${API_URL}/generate-pdf`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
+                credentials: "include",   // important cross-origin
                 body: JSON.stringify(formData),
             });
 
-            if (!response.ok) throw new Error("Erreur serveur");
+            if (!response.ok) {
+                throw new Error("Erreur serveur lors de la génération du PDF");
+            }
 
             const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
+
+            // Forcer le type MIME
+            const pdfBlob = new Blob([blob], { type: "application/pdf" });
+
+            const url = window.URL.createObjectURL(pdfBlob);
+
+            // Sécuriser le nom du fichier
+            const safeDossierNo = String(formData.dossier_no).replace(/[\/\\]/g, "_");
 
             const link = document.createElement("a");
             link.href = url;
-            link.setAttribute("download", `Dossier_${formData.dossier_no}.pdf`);
+            link.download = `Dossier_${safeDossierNo}.pdf`;
+
             document.body.appendChild(link);
             link.click();
 
-            link.parentNode.removeChild(link);
+            link.remove();
             window.URL.revokeObjectURL(url);
 
         } catch (error) {
             console.error("Erreur lors du téléchargement :", error);
-            alert("Impossible de contacter le serveur Python (vérifiez qu'il est lancé sur le port 5000)");
+            alert("Impossible de générer le PDF. Vérifiez le serveur.");
         }
     };
+
 
     const handleCancel = () => {
         navigate("/archive");

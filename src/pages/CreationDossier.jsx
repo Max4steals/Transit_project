@@ -54,47 +54,54 @@ export default function DossierPage() {
         setLoading(false);
     };
 
-    // ACTION 2 : Appel au script Python pour le PDF
     const handleDownloadPDF = async () => {
         if (!formData.dossier_no) {
             alert("Veuillez saisir un numéro de dossier.");
             return;
         }
 
-        try {
-            const API_URL = import.meta.env.VITE_API_URL;
+        const API_URL = import.meta.env.VITE_API_URL;
 
-            console.log("Envoi des données à Flask...");
+        try {
             const response = await fetch(`${API_URL}/generate-pdf`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
+                credentials: "include",   // important cross-origin
                 body: JSON.stringify(formData),
             });
 
+            if (!response.ok) {
+                throw new Error("Erreur serveur lors de la génération du PDF");
+            }
 
-            if (!response.ok) throw new Error("Erreur serveur");
+            const blob = await response.blob();
 
-            // --- ÉTAPE CRUCIALE POUR LE TÉLÉCHARGEMENT ---
-            const blob = await response.blob(); // Transforme la réponse en fichier binaire
-            const url = window.URL.createObjectURL(blob); // Crée un lien temporaire
+            // Forcer le type MIME
+            const pdfBlob = new Blob([blob], { type: "application/pdf" });
+
+            const url = window.URL.createObjectURL(pdfBlob);
+
+            // Sécuriser le nom du fichier
+            const safeDossierNo = String(formData.dossier_no).replace(/[\/\\]/g, "_");
 
             const link = document.createElement("a");
             link.href = url;
-            link.setAttribute("download", `Dossier_${formData.dossier_no}.pdf`); // Nom du fichier
-            document.body.appendChild(link);
-            link.click(); // Simule le clic pour télécharger
+            link.download = `Dossier_${safeDossierNo}.pdf`;
 
-            // Nettoyage
-            link.parentNode.removeChild(link);
+            document.body.appendChild(link);
+            link.click();
+
+            link.remove();
             window.URL.revokeObjectURL(url);
 
         } catch (error) {
             console.error("Erreur lors du téléchargement :", error);
-            alert("Impossible de contacter le serveur Python (vérifiez qu'il est lancé sur le port 5000)");
+            alert("Impossible de générer le PDF. Vérifiez le serveur.");
         }
     };
+
 
     return (
         <div className="flex h-screen bg-white font-sans text-black">

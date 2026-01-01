@@ -241,30 +241,49 @@ export default function SuiviPage() {
             alert("Facture non encore enregistrée");
             return;
         }
+
         const API_URL = import.meta.env.VITE_API_URL;
 
-        const response = await fetch(
-            `${API_URL}/facture/${factureId}`
-        );
+        try {
+            const response = await fetch(
+                `${API_URL}/facture/${factureId}`,
+                {
+                    method: "GET",
+                    credentials: "include",
+                }
+            );
 
+            if (!response.ok) {
+                throw new Error("Erreur téléchargement facture");
+            }
 
-        if (!response.ok) {
-            alert("Erreur lors du téléchargement");
-            return;
+            const blob = await response.blob();
+
+            const pdfBlob = new Blob([blob], { type: "application/pdf" });
+
+            const url = window.URL.createObjectURL(pdfBlob);
+
+            const numero =
+                selectedDossier.factures?.[0]?.data_json?.facture?.numero || factureId;
+
+            const safeFilename = `facture_${numero}`.replace(/[\/\\]/g, "_");
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${safeFilename}.pdf`;
+
+            document.body.appendChild(a);
+            a.click();
+
+            a.remove();
+            window.URL.revokeObjectURL(url);
+
+        } catch (error) {
+            console.error(error);
+            alert("Impossible de télécharger la facture");
         }
-
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `facture_${selectedDossier.factures?.[0]?.data_json?.facture?.numero}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-
-        window.URL.revokeObjectURL(url);
     };
+
 
     const getNextInvoiceNumber = async () => {
         const year = new Date().getFullYear().toString().slice(-2);
