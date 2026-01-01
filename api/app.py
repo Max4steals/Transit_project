@@ -41,6 +41,8 @@ def handle_pdf():
         return make_response({"error": str(e)}, 500)
 
 
+from io import BytesIO
+
 @app.route("/facture/<int:facture_id>", methods=["GET"])
 def telecharger_facture(facture_id):
 
@@ -59,19 +61,14 @@ def telecharger_facture(facture_id):
     data = res.data["data_json"]
     numero = data["facture"]["numero"]
 
-    output_file = f"facture_{numero.replace('/', '_')}.pdf"
-
-    generer_facture_eden_dynamique(
+    pdf_buffer = generer_facture_eden_dynamique(
         "Entete EDEN.pdf",
-        output_file,
         data
     )
 
     return send_file(
-        output_file,
+        pdf_buffer,
+        mimetype="application/pdf",
         as_attachment=True,
-        download_name=f"Facture_{numero}.pdf",
-        mimetype="application/pdf"
+        download_name=f"Facture_{numero}.pdf"
     )
-
-
