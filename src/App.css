@@ -1,0 +1,95 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+.clip-path-arrow {
+  clip-path: polygon(0% 0%, 90% 0%, 100% 50%, 90% 100%, 0% 100%, 10% 50%);
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+/* --- DESIGN FACTURE EDEN TIR --- */
+.invoice-container {
+    background-color: #f4f4f4;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.invoice-page {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 15mm;
+    margin: 0 auto;
+    background: white;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    color: black;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+}
+
+.invoice-header { display: flex; justify-content: space-between; margin-bottom: 25px; }
+.invoice-logo img { max-width: 140px; height: auto; }
+.client-box { width: 300px; font-size: 12px; line-height: 1.4; border: 1px solid #eee; padding: 10px; }
+
+.info-container { 
+    display: flex; justify-content: space-between; font-size: 11px; 
+    margin-bottom: 20px; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 10px 0; 
+}
+
+.invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+.invoice-table th { text-align: left; font-size: 12px; border-bottom: 1px solid #000; padding: 8px; }
+.invoice-table td { padding: 4px 8px; font-size: 12px; border-bottom: 1px solid #f9f9f9; }
+.section-header { font-weight: bold; text-decoration: underline; background: #f2f2f2 !important; padding: 10px 8px !important; }
+
+.totals-wrapper { display: flex; justify-content: flex-end; margin-top: 10px; }
+.totals-table { width: 280px; font-size: 13px; }
+.totals-table td { padding: 3px 8px; }
+.total-final { font-weight: bold; font-size: 15px; border-top: 2px solid #000 !important; }
+
+@media print {
+    .no-print { display: none !important; }
+    body { background: white !important; margin: 0; padding: 0; }
+    .invoice-page { margin: 0; box-shadow: none; width: 100%; }
+    .invoice-container { padding: 0; background: white; }
+}
