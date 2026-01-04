@@ -54,7 +54,7 @@ def montant_en_lettres(montant):
     return f"{texte_entier} dinars"
 
 # ===================== GÉNÉRATION PDF =====================
-def generer_facture_eden(fichier_entete, data):
+def generer_facture_eden_dynamique(fichier_entete, data):
     try:
         f_num = data['facture'].get('numero', 'FACT-001')
         nom_fichier = f"facture_{f_num}.pdf"

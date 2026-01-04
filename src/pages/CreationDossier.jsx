@@ -1,13 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
 import logo from "../logo.png";
-
 import { Link } from "react-router-dom";
-
-
 
 export default function DossierPage() {
     const [loading, setLoading] = useState(false);
+    const [clients, setClients] = useState([]);
+    const [filteredClients, setFilteredClients] = useState([]);
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [clientSearch, setClientSearch] = useState("");
+    const [loadingClients, setLoadingClients] = useState(false);
+
     const [formData, setFormData] = useState({
         dossier_no: "",
         mode: "import",
@@ -37,12 +40,78 @@ export default function DossierPage() {
         banque: ""
     });
 
+    useEffect(() => {
+        fetchClients();
+    }, []);
+
+    const fetchClients = async () => {
+        setLoadingClients(true);
+        try {
+            const { data, error } = await supabase
+                .from("clients")
+                .select("id, nom_client")
+                .order("nom_client", { ascending: true });
+
+            if (error) throw error;
+
+            setClients(data || []);
+            setFilteredClients(data || []);
+        } catch (error) {
+            console.error("Erreur chargement clients:", error);
+            alert("Erreur lors du chargement des clients");
+        } finally {
+            setLoadingClients(false);
+        }
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
 
-    // ACTION 1 : Sauvegarde dans Supabase
+    const handleClientSearch = (e) => {
+        const searchTerm = e.target.value;
+        setClientSearch(searchTerm);
+        setFormData({ ...formData, destinataire: searchTerm });
+
+        if (searchTerm.length > 0) {
+            const filtered = clients.filter(client => {
+                const searchLower = searchTerm.toLowerCase();
+                return (
+                    client.nom_client &&
+                    client.nom_client.toLowerCase().includes(searchLower)
+                );
+            });
+            setFilteredClients(filtered);
+            setShowDropdown(true);
+        } else {
+            setFilteredClients(clients);
+            setShowDropdown(false);
+        }
+    };
+
+    const selectClient = (client) => {
+        const clientInfo = client.nom_client || "";
+
+        setFormData({
+            ...formData,
+            destinataire: clientInfo
+        });
+        setClientSearch(clientInfo);
+        setShowDropdown(false);
+    };
+
+    useEffect(() => {
+        const handleClickOutside = () => {
+            setShowDropdown(false);
+        };
+
+        document.addEventListener("click", handleClickOutside);
+        return () => {
+            document.removeEventListener("click", handleClickOutside);
+        };
+    }, []);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -68,7 +137,7 @@ export default function DossierPage() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                credentials: "include",   // important cross-origin
+                credentials: "include",
                 body: JSON.stringify(formData),
             });
 
@@ -77,22 +146,15 @@ export default function DossierPage() {
             }
 
             const blob = await response.blob();
-
-            // Forcer le type MIME
             const pdfBlob = new Blob([blob], { type: "application/pdf" });
-
             const url = window.URL.createObjectURL(pdfBlob);
-
-            // Sécuriser le nom du fichier
             const safeDossierNo = String(formData.dossier_no).replace(/[\/\\]/g, "_");
-
             const link = document.createElement("a");
             link.href = url;
             link.download = `Dossier_${safeDossierNo}.pdf`;
 
             document.body.appendChild(link);
             link.click();
-
             link.remove();
             window.URL.revokeObjectURL(url);
 
@@ -102,41 +164,24 @@ export default function DossierPage() {
         }
     };
 
-
     return (
         <div className="flex h-screen bg-white font-sans text-black">
-            {/* SIDEBAR */}
             <aside className="w-64 bg-black text-white flex flex-col">
-                {/* LOGO AVEC CADRE BLANC RÉGULIER */}
                 <div className="p-8 mb-4">
                     <div className="flex items-center gap-4">
-                        {/* Cadre blanc pour le logo */}
                         <div className="w-60 h-20 bg-white rounded-xl flex items-center justify-center overflow-hidden p-2 shadow-sm">
-                            <img
-                                src={logo}
-                                alt="Logo"
-                                className="w-full h-full object-contain"
-                            />
+                            <img src={logo} alt="Logo" className="w-full h-full object-contain" />
                         </div>
-
-
                     </div>
                 </div>
                 <nav className="flex-1 px-4 space-y-2">
-                    {/* Navigation vers le Dashboard (par exemple la racine /) */}
-                    <NavItem label="Dashboard" to="/dashboard" />
-
-                    {/* Page actuelle (active) */}
+                    <NavItem label="Dashboard" to="/" />
                     <NavItem label="Création d'un dossier" to="/creation-dossier" active />
-
                     <NavItem label="Suivi des dossiers" to="/archive" />
-
-                    {/* Navigation vers la page Client */}
-                    <NavItem label="Clients" to="/" />
+                    <NavItem label="Clients" to="/client" />
                 </nav>
-            </aside >
+            </aside>
 
-            {/* CONTENU PRINCIPAL */}
             <main className="flex-1 bg-zinc-50 overflow-y-auto min-h-screen">
                 <header className="h-20 bg-white border-b border-zinc-100 flex items-center px-10 sticky top-0 z-20">
                     <h1 className="text-xl font-bold tracking-tight uppercase">Saisie Dossier de Transit</h1>
@@ -145,7 +190,6 @@ export default function DossierPage() {
                 <div className="p-10 flex justify-center">
                     <form onSubmit={handleSubmit} className="bg-white w-[850px] p-12 shadow-2xl border border-zinc-200 rounded-sm mb-20 text-sm">
 
-                        {/* HEADER FORMULAIRE */}
                         <div className="flex justify-between items-start mb-10">
                             <div className="text-3xl font-black italic tracking-tighter text-zinc-800">EDEN TIR</div>
                             <div className="flex items-center gap-2 font-bold">
@@ -154,7 +198,6 @@ export default function DossierPage() {
                             </div>
                         </div>
 
-                        {/* MODE SELECTION */}
                         <div className="flex justify-center gap-20 mb-10 uppercase font-bold tracking-widest text-xs">
                             <label className="flex items-center gap-3 cursor-pointer">
                                 <input type="radio" name="mode" value="import" checked={formData.mode === "import"} onChange={handleChange} className="w-4 h-4 accent-black" />
@@ -166,23 +209,59 @@ export default function DossierPage() {
                             </label>
                         </div>
 
-                        {/* TABLEAU EXPEDITEUR / DESTINATAIRE / MARCHANDISE */}
                         <div className="grid grid-cols-3 border border-black mb-8">
                             <div className="border-r border-black">
                                 <div className="bg-zinc-100 p-2 text-center font-bold border-b border-black uppercase text-[10px]">Expéditeur</div>
                                 <textarea name="expediteur" onChange={handleChange} rows="4" className="w-full p-2 outline-none resize-none bg-transparent" />
                             </div>
-                            <div className="border-r border-black">
+
+                            <div className="border-r border-black relative">
                                 <div className="bg-zinc-100 p-2 text-center font-bold border-b border-black uppercase text-[10px]">Destinataire</div>
-                                <textarea name="destinataire" onChange={handleChange} rows="4" className="w-full p-2 outline-none resize-none bg-transparent" />
+
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={clientSearch}
+                                        onChange={handleClientSearch}
+                                        onFocus={() => clientSearch.length > 0 && setShowDropdown(true)}
+                                        placeholder="Rechercher un client..."
+                                        className="w-full p-2 outline-none bg-transparent border-none focus:ring-0"
+                                    />
+
+                                    {showDropdown && (
+                                        <div
+                                            className="absolute z-50 top-full left-0 right-0 max-h-60 overflow-y-auto bg-white border border-zinc-200 shadow-lg"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            {loadingClients ? (
+                                                <div className="p-3 text-center text-zinc-500">Chargement...</div>
+                                            ) : filteredClients.length > 0 ? (
+                                                filteredClients.map((client) => (
+                                                    <div
+                                                        key={client.id}
+                                                        onClick={() => selectClient(client)}
+                                                        className="p-3 border-b border-zinc-100 hover:bg-zinc-50 cursor-pointer transition-colors"
+                                                    >
+                                                        <div className="font-semibold text-sm">
+                                                            {client.nom_client || "Client sans nom"}
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="p-3 text-center text-zinc-500">Aucun client trouvé</div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
                             </div>
+
                             <div>
                                 <div className="bg-zinc-100 p-2 text-center font-bold border-b border-black uppercase text-[10px]">Marchandise</div>
                                 <textarea name="marchandise" onChange={handleChange} rows="4" className="w-full p-2 outline-none resize-none bg-transparent" />
                             </div>
                         </div>
 
-                        {/* SECTION TRANSPORT */}
                         <div className="border-y-4 border-double border-black py-2 text-center text-2xl font-black tracking-[0.3em] mb-6">TRANSPORT</div>
 
                         <div className="space-y-4 mb-10">
@@ -225,7 +304,6 @@ export default function DossierPage() {
                             </div>
                         </div>
 
-                        {/* SECTION DOUANE */}
                         <div className="border-y-4 border-double border-black py-2 text-center text-2xl font-black tracking-[0.3em] mb-6">DOUANE</div>
 
                         <div className="space-y-4 mb-12">
@@ -247,7 +325,6 @@ export default function DossierPage() {
                             </div>
                         </div>
 
-                        {/* BOUTONS D'ACTION */}
                         <div className="flex flex-col sm:flex-row gap-4">
                             <button
                                 type="submit"
@@ -273,7 +350,6 @@ export default function DossierPage() {
     );
 }
 
-// COMPOSANTS INTERNES
 function Field({ label, name, onChange, flex = false, width = "" }) {
     return (
         <div className={`flex items-baseline gap-2 ${flex ? "flex-1" : width}`}>
