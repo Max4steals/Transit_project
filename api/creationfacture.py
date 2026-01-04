@@ -10,7 +10,7 @@ from pypdf import PdfReader, PdfWriter
 from num2words import num2words 
 
 # ===================== CONFIGURATION SUPABASE =====================
-SUPABASE_URL = "https://qsuagjwscgsftgfyfket.supabase.co/"
+SUPABASE_URL = "https://xjdcffmhhiknxwcfogxr.supabase.co/"
 # Note: Attention à ne pas exposer tes clés secrètes publiquement
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhqZGNmZm1oaGlrbnh3Y2ZvZ3hyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NjIyODQ5OSwiZXhwIjoyMDgxODA0NDk5fQ.Cim5bHBY7Lefn7ob2hmPp_K4-TPdI8hfufTJd38sYZo"
 BUCKET_NAME = "Facture"
@@ -88,8 +88,8 @@ def generer_facture_eden_dynamique(fichier_entete, data):
         f = data['facture']
         
         c.setFont("Helvetica-Bold", 8.5)
-        labels_gauche = ["Facture n° :", "Date Facture :", "Dossier import n° :", "Navire :", "Date d'arrivée :", "Conteneur :"]
-        values_gauche = [f.get('numero'), f.get('date', '')[:10], f.get('dossier_no'), f.get('navire'), f.get('date_arrivee'), f.get('conteneur')]
+        labels_gauche = ["Facture n° :", "Date Facture :", "Dossier import n° :", "Navire :", "Date d'arrivée :", "Conteneur :" , "Marque"]
+        values_gauche = [f.get('numero'), f.get('date', '')[:10], f.get('dossier_no'), f.get('navire'), f.get('date_arrivee'), f.get('conteneur'), f.get('marque')]
         
         for i, (label, val) in enumerate(zip(labels_gauche, values_gauche)):
             c.setFont("Helvetica-Bold", 8.5)
@@ -97,8 +97,8 @@ def generer_facture_eden_dynamique(fichier_entete, data):
             c.setFont("Helvetica", 8.5)
             c.drawString(60*mm, y_info - (i*4.5)*mm, str(val))
 
-        labels_droite = ["Déclaration C n° :", "Déclaration UC n° :", "Escale n° :", "Rubrique :", "Colisage :", "Poids Brut :"]
-        values_droite = [f.get('declaration_c'), f.get('declaration_uc'), f.get('escale'), f.get('rubrique'), f.get('colisage'), f.get('poids_brut')]
+        labels_droite = ["Déclaration C n° :", "Déclaration UC n° :", "Escale n° :", "Rubrique :", "Colisage :", "Poids Brut :", "Valeur Douane :"]
+        values_droite = [f.get('declaration_c'), f.get('declaration_uc'), f.get('escale'), f.get('rubrique'), f.get('colisage'), f.get('poids_brut') , f.get('valeur_douane')]
 
         for i, (label, val) in enumerate(zip(labels_droite, values_droite)):
             c.setFont("Helvetica-Bold", 8.5)
