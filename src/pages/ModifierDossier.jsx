@@ -203,10 +203,10 @@ export default function ModifierDossier() {
                         </div>
                     </div>
                     <nav className="flex-1 px-4 space-y-2">
-                        <NavItem label="Dashboard" to="/dashboard" />
+                        <NavItem label="Dashboard" to="/" />
                         <NavItem label="Création d'un dossier" to="/creation-dossier" />
-                        <NavItem label="Suivi des dossiers" to="/suivi" />
-                        <NavItem label="Clients" to="/" />
+                        <NavItem label="Suivi des dossiers" to="/archive" />
+                        <NavItem label="Clients" to="/client" />
                     </nav>
                 </aside>
                 <main className="flex-1 bg-zinc-50 overflow-y-auto min-h-screen flex items-center justify-center">
@@ -235,10 +235,10 @@ export default function ModifierDossier() {
                         </div>
                     </div>
                     <nav className="flex-1 px-4 space-y-2">
-                        <NavItem label="Dashboard" to="/dashboard" />
+                        <NavItem label="Dashboard" to="/" />
                         <NavItem label="Création d'un dossier" to="/creation-dossier" />
-                        <NavItem label="Suivi des dossiers" to="/suivi" />
-                        <NavItem label="Clients" to="/" />
+                        <NavItem label="Suivi des dossiers" to="/archive" />
+                        <NavItem label="Clients" to="/client" />
                     </nav>
                 </aside>
                 <main className="flex-1 bg-zinc-50 overflow-y-auto min-h-screen flex items-center justify-center">
@@ -247,7 +247,7 @@ export default function ModifierDossier() {
                         <h2 className="text-2xl font-bold mb-2">Erreur</h2>
                         <p className="text-gray-600 mb-6">{error}</p>
                         <button
-                            onClick={() => navigate("/suivi")}
+                            onClick={() => navigate("/archive")}
                             className="bg-black text-white px-6 py-3 rounded-xl font-bold uppercase tracking-widest hover:bg-zinc-800 transition"
                         >
                             Retour au suivi
@@ -274,10 +274,10 @@ export default function ModifierDossier() {
                     </div>
                 </div>
                 <nav className="flex-1 px-4 space-y-2">
-                    <NavItem label="Dashboard" to="/dashboard" />
+                    <NavItem label="Dashboard" to="/" />
                     <NavItem label="Création d'un dossier" to="/creation-dossier" />
-                    <NavItem label="Suivi des dossiers" to="/suivi" active />
-                    <NavItem label="Clients" to="/" />
+                    <NavItem label="Suivi des dossiers" to="/archive" active />
+                    <NavItem label="Clients" to="/client" />
                 </nav>
             </aside >
 

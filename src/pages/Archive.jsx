@@ -560,10 +560,10 @@ export default function SuiviPage() {
                     </div>
                 </div>
                 <nav className="flex-1 px-4 space-y-2">
-                    <NavItem label="Dashboard" to="/dashboard" />
+                    <NavItem label="Dashboard" to="/" />
                     <NavItem label="Création d'un dossier" to="/creation-dossier" />
-                    <NavItem label="Suivi des dossiers" to="/suivi" active />
-                    <NavItem label="Clients" to="/" />
+                    <NavItem label="Suivi des dossiers" to="/archive" active />
+                    <NavItem label="Clients" to="/client" />
                 </nav>
             </aside>
 
@@ -785,7 +785,7 @@ export default function SuiviPage() {
                                     <div className="info-row"><span className="info-label">Date Facture :</span><input className="info-value" defaultValue={new Date().toLocaleDateString('fr-FR')} /></div>
                                     <div className="info-row"><span className="info-label">Dossier import n° :</span><input className="info-value" defaultValue={selectedDossier.dossier_no} /></div>
                                     <div className="info-row"><span className="info-label">Navire :</span><input className="info-value" defaultValue={selectedDossier.navire || ""} /></div>
-                                    <div className="info-row"><span className="info-label">Date d'arrivée :</span><input className="info-value" defaultValue={""} /></div>
+                                    <div className="info-row"><span className="info-label">Date d'arrivée :</span><input className="info-value" defaultValue={selectedDossier.date_dest || ""} /></div>
                                     <div className="info-row">
                                         <span className="info-label">Conteneur :</span>
                                         <input className="info-value" defaultValue={selectedDossier.ctu_lta?.split('"')[0] + (selectedDossier.ctu_lta?.includes('"') ? '"' : '')} />
@@ -802,7 +802,7 @@ export default function SuiviPage() {
                                     <div className="info-row"><span className="info-label">Rubrique :</span><input className="info-value" defaultValue={selectedDossier.rubrique || ""} /></div>
                                     <div className="info-row"><span className="info-label">Colisage :</span><input className="info-value" defaultValue={selectedDossier.colisage || ""} /></div>
                                     <div className="info-row"><span className="info-label">Poids Brut :</span><input className="info-value" defaultValue={selectedDossier.pb || ""} /></div>
-                                    <div className="info-row"><span className="info-label">Valeur Douane:</span><input className="info-value" defaultValue={""} /></div>
+                                    <div className="info-row"><span className="info-label">Valeur Douane:</span><input className="info-value" defaultValue={selectedDossier.valeur_dinars || ""} /></div>
                                 </div>
                             </div>
 
