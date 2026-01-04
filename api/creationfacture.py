@@ -176,10 +176,12 @@ def generer_facture_eden_dynamique(fichier_entete, data):
         
         output = io.BytesIO()
         writer.write(output)
+        upload_to_supabase(output.getvalue(), nom_fichier)
+        output.seek(0)
         
-        return upload_to_supabase(output.getvalue(), nom_fichier)
+        return output
 
     except Exception as e:
-        import traceback
-        return {"success": False, "error": f"{str(e)}\n{traceback.format_exc()}"}
+        print(f"Erreur génération : {e}")
+        return None
 
