@@ -327,7 +327,11 @@ export default function SuiviPage() {
                     marque: selectedDossier.ctu_lta?.includes('"')
                         ? selectedDossier.ctu_lta.split('"').slice(1).join('"')
                         : "",
-                    declaration_c: selectedDossier.declaration_no || "",
+                    declaration_c: selectedDossier.declaration_no && selectedDossier.date_declaration
+                        ? `${selectedDossier.declaration_no} du ${new Date(
+                            selectedDossier.date_declaration
+                        ).toLocaleDateString("fr-FR")}`
+                        : "",
                     declaration_uc: declarationUC,
                     escale: selectedDossier.escale || "",
                     rubrique: selectedDossier.rubrique || "",
@@ -805,7 +809,10 @@ export default function SuiviPage() {
                                     </div>
                                 </div>
                                 <div className="info-col">
-                                    <div className="info-row"><span className="info-label">Déclaration C n° :</span><input className="info-value" defaultValue={selectedDossier.declaration_no || ""} /></div>
+                                    <div className="info-row"><span className="info-label">Déclaration C n° :</span><input className="info-value" defaultValue={selectedDossier?.declaration_no && selectedDossier?.date_declaration
+                                        ? `${selectedDossier.declaration_no} du ${new Date(
+                                            selectedDossier.date_declaration
+                                        ).toLocaleDateString("fr-FR")}` : ""} /></div>
                                     <input
                                         className="info-value"
                                         value={declarationUC}
