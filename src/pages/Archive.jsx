@@ -11,6 +11,8 @@ export default function SuiviPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("tous");
     const navigate = useNavigate();
+    const [declarationUC, setDeclarationUC] = useState("");
+
 
     // État pour les données de la facture en cours d'édition
     const [invoiceRows, setInvoiceRows] = useState({
@@ -320,18 +322,18 @@ export default function SuiviPage() {
                     date: new Date().toISOString(),
                     dossier_no: selectedDossier.dossier_no,
                     navire: selectedDossier.navire || "",
-                    date_arrivee: "",
+                    date_arrivee: selectedDossier.date_dest,
                     conteneur: selectedDossier.ctu_lta?.split('"')[0] || "",
                     marque: selectedDossier.ctu_lta?.includes('"')
                         ? selectedDossier.ctu_lta.split('"').slice(1).join('"')
                         : "",
                     declaration_c: selectedDossier.declaration_no || "",
-                    declaration_uc: "",
+                    declaration_uc: declarationUC,
                     escale: selectedDossier.escale || "",
                     rubrique: selectedDossier.rubrique || "",
                     colisage: selectedDossier.colisage || "",
                     poids_brut: selectedDossier.pb || "",
-                    valeur_douane: ""
+                    valeur_douane: selectedDossier.valeur_dinars
                 },
 
                 client: {
@@ -642,7 +644,14 @@ export default function SuiviPage() {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
-                                                    <button onClick={() => setSelectedDossier(d)} className="bg-zinc-900 text-white text-[10px] font-bold uppercase px-4 py-2 rounded">Ouvrir Facture</button>
+                                                    <button onClick={() => {
+                                                        setSelectedDossier(d);
+                                                        setDeclarationUC(
+                                                            d.factures?.[0]?.data_json?.facture?.declaration_uc || ""
+                                                        );
+                                                    }}
+                                                        className="bg-zinc-900 text-white text-[10px] font-bold uppercase px-4 py-2 rounded"
+                                                    >Ouvrir Facture</button>
                                                 </td>
                                             </tr>
                                         ))}
@@ -797,7 +806,12 @@ export default function SuiviPage() {
                                 </div>
                                 <div className="info-col">
                                     <div className="info-row"><span className="info-label">Déclaration C n° :</span><input className="info-value" defaultValue={selectedDossier.declaration_no || ""} /></div>
-                                    <div className="info-row"><span className="info-label">Déclaration UC n° :</span><input className="info-value" defaultValue={""} /></div>
+                                    <input
+                                        className="info-value"
+                                        value={declarationUC}
+                                        onChange={(e) => setDeclarationUC(e.target.value)}
+                                        placeholder="Saisir déclaration UC"
+                                    />
                                     <div className="info-row"><span className="info-label">Escale n° :</span><input className="info-value" defaultValue={selectedDossier.escale || ""} /></div>
                                     <div className="info-row"><span className="info-label">Rubrique :</span><input className="info-value" defaultValue={selectedDossier.rubrique || ""} /></div>
                                     <div className="info-row"><span className="info-label">Colisage :</span><input className="info-value" defaultValue={selectedDossier.colisage || ""} /></div>
