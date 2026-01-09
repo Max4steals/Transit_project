@@ -342,10 +342,10 @@ export default function SuiviPage() {
                     </div>
                 </div>
                 <nav className="flex-1 px-4 space-y-2">
-                    <NavItem label="Dashboard" to="/" />
+                    <NavItem label="Dashboard" to="/dashboard" />
                     <NavItem label="Création d'un dossier" to="/creation-dossier" />
                     <NavItem label="Suivi des dossiers" to="/archive" active />
-                    <NavItem label="Clients" to="/client" />
+                    <NavItem label="Clients" to="/" />
                 </nav>
             </aside>
 
