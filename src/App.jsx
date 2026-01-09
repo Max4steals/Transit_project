@@ -4,6 +4,8 @@ import CreationDossier from "./pages/CreationDossier"
 import SuiviPage from "./pages/Archive"
 import Dashboard from "./pages/dashboard"
 import ModifierDossier from "./pages/ModifierDossier";
+import FacturePage from "./pages/FactureDetails";
+import ModFacture from "./pages/ModifierFacture";
 
 export default function App() {
   return (
@@ -14,6 +16,8 @@ export default function App() {
         <Route path="/archive" element={<SuiviPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/modifier-dossier/:dossier_no" element={<ModifierDossier />} />
+        <Route path="/modfacture/:dossier_no" element={<ModFacture />} />
+        <Route path="/facture/:dossier_no" element={<FacturePage />} />
 
       </Routes>
     </BrowserRouter>
