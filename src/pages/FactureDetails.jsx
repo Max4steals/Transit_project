@@ -146,17 +146,17 @@ export default function FactureDetails() {
             const dataJson = {
                 facture: {
                     numero: nextInvoiceNumber,
-                    date: new Date().toISOString(),
+                    date: new Date().toLocaleDateString('fr-FR'),
                     dossier_no: dossier_no,
                     navire: dossier.navire || "",
                     date_arrivee: dossier.date_dest,
                     conteneur: dossier.ctu_lta?.split('"')[0] || "",
                     marque: dossier.ctu_lta?.includes('"') ? dossier.ctu_lta.split('"').slice(1).join('"') : "",
-                    declaration_c: dossier.declaration_no && dossier.date_declaration
-                        ? `${dossier.declaration_no} du ${new Date(
-                            dossier.date_declaration
-                        ).toLocaleDateString("fr-FR")}`
-                        : "",
+                    declaration_c:
+                        dossier.declaration_no && dossier.date_declaration
+                            ? `${dossier.declaration_no} du ${dossier.date_declaration}`
+                            : "",
+
                     declaration_uc: declarationUC,
                     escale: dossier.escale || "",
                     rubrique: dossier.rubrique || "",
@@ -308,13 +308,9 @@ export default function FactureDetails() {
 
                             <div className="space-y-1">
 
-                                <InfoRow label="Déclaration C n° :" value={dossier?.declaration_no && dossier?.date_declaration
-
-                                    ? `${dossier.declaration_no} du ${new Date(
-
-                                        dossier.date_declaration
-
-                                    ).toLocaleDateString("fr-FR")}` : ""} isEditable={true} />
+                                <InfoRow label="Déclaration C n° :" value={dossier.declaration_no && dossier.date_declaration
+                                    ? `${dossier.declaration_no} du ${dossier.date_declaration}`
+                                    : ""} isEditable={true} />
 
                                 <div className="flex items-center">
 

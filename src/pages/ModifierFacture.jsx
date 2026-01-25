@@ -126,9 +126,7 @@ export default function FactureModifier() {
                     conteneur: dossier.ctu_lta?.split('"')[0] || "",
                     marque: dossier.ctu_lta?.includes('"') ? dossier.ctu_lta.split('"').slice(1).join('"') : "",
                     declaration_c: dossier.declaration_no && dossier.date_declaration
-                        ? `${dossier.declaration_no} du ${new Date(
-                            dossier.date_declaration
-                        ).toLocaleDateString("fr-FR")}`
+                        ? `${dossier.declaration_no} du ${dossier.date_declaration}`
                         : "",
                     declaration_uc: declarationUC,
                     escale: dossier.escale || "",
@@ -243,9 +241,7 @@ export default function FactureModifier() {
 
                             <div className="space-y-1">
                                 <InfoRow label="Déclaration C n° :" value={dossier.declaration_no && dossier.date_declaration
-                                    ? `${dossier.declaration_no} du ${new Date(
-                                        dossier.date_declaration
-                                    ).toLocaleDateString("fr-FR")}`
+                                    ? `${dossier.declaration_no} du ${dossier.date_declaration}`
                                     : ""} />
                                 <div className="flex items-center">
                                     <span className="w-36 font-bold">Déclaration UC :</span>
