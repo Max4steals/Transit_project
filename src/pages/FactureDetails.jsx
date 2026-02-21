@@ -127,6 +127,8 @@ export default function FactureDetails() {
             alert("Impossible de télécharger la facture");
         }
     };
+
+
     const getNextInvoiceNumber = async () => {
         const year = new Date().getFullYear().toString().slice(-2);
 
