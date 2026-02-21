@@ -1,4 +1,4 @@
-#import io
+import io
 import os
 import qrcode
 from supabase import create_client, Client
