@@ -9,11 +9,12 @@ import os
 import re
 
 app = Flask(__name__)
+
 CORS(
     app,
-    resources={r"/*": {"origins": [
-            "https://transit-project.vercel.app",
-            re.compile(r"^https://transit-project-.*\.vercel\.app$")
+    resources={r"/*": {
+        "origins": [
+            "https://transit-project.vercel.app"
         ]
     }},
     supports_credentials=True
