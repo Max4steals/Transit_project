@@ -1,4 +1,4 @@
-import io
+#import io
 import os
 import qrcode
 from supabase import create_client, Client
@@ -17,9 +17,9 @@ BUCKET_NAME = "Facture"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+
 # ===================== FONCTIONS DE STOCKAGE =====================
 def upload_to_supabase(pdf_bytes, filename):
-    """Gère l'upload avec écrasement si le fichier existe déjà"""
     try:
         # On utilise directement upsert=True pour simplifier
         supabase.storage.from_(BUCKET_NAME).upload(
@@ -28,7 +28,6 @@ def upload_to_supabase(pdf_bytes, filename):
             file_options={"content-type": "application/pdf", "x-upsert": "true"}
         )
     except Exception as e:
-        # Fallback si upsert échoue (certaines versions de lib)
         try:
             supabase.storage.from_(BUCKET_NAME).update(
                 path=filename,
@@ -43,7 +42,6 @@ def upload_to_supabase(pdf_bytes, filename):
     
 def montant_en_lettres(montant):
     entier = int(montant)
-    # On arrondit pour éviter les flottants imprécis
     millimes = int(round((montant - entier) * 1000))
     
     texte_entier = num2words(entier, lang='fr').capitalize()
@@ -53,7 +51,6 @@ def montant_en_lettres(montant):
         return f"{texte_entier} dinars et {texte_millimes} millimes"
     return f"{texte_entier} dinars"
 
-# ===================== GÉNÉRATION PDF =====================
 def generer_facture_eden_dynamique(fichier_entete, data):
     try:
         f_num = data['facture'].get('numero', 'FACT-001')
@@ -64,7 +61,6 @@ def generer_facture_eden_dynamique(fichier_entete, data):
         packet = io.BytesIO()
         c = canvas.Canvas(packet, pagesize=A4)
         
-        # --- 1. QR CODE ---
         qr = qrcode.QRCode(box_size=3, border=1)
         qr.add_data(url_cible)
         qr.make(fit=True)
@@ -74,7 +70,6 @@ def generer_facture_eden_dynamique(fichier_entete, data):
         qr_buf.seek(0)
         c.drawImage(ImageReader(qr_buf), 10*mm, A4[1]-40*mm, width=30*mm, height=30*mm)
 
-        # --- 2. INFOS CLIENT ---
         c.setFont("Helvetica", 9)
         y_client = 255*mm 
         client = data['client']
@@ -83,12 +78,15 @@ def generer_facture_eden_dynamique(fichier_entete, data):
         c.drawRightString(185*mm, y_client - 10*mm, f"Adresse : {client.get('adresse', '')}")
         c.drawRightString(185*mm, y_client - 15*mm, f"Code TVA : {client.get('code_tva', '')}")
 
-        # --- 3. INFOS DOSSIER ---
         y_info = 218*mm 
         f = data['facture']
+        mode = f.get("mode")  
+        Date = "Date de sortie :" if mode == "export" else "Date d'arrivée :"
+        nom_facture = "Dossier export n°" if mode == "export" else "Dossier import n°"
         
         c.setFont("Helvetica-Bold", 8.5)
-        labels_gauche = ["Facture n° :", "Date Facture :", "Dossier import n° :", "Navire :", "Date d'arrivée :", "Conteneur :" , "Marque"]
+
+        labels_gauche = ["Facture n° :", "Date Facture :", nom_facture, "Navire :", Date , "Conteneur :" , "Marque"]
         values_gauche = [f.get('numero'), f.get('date', '')[:10], f.get('dossier_no'), f.get('navire'), f.get('date_arrivee'), f.get('conteneur'), f.get('marque')]
         
         for i, (label, val) in enumerate(zip(labels_gauche, values_gauche)):
@@ -97,7 +95,11 @@ def generer_facture_eden_dynamique(fichier_entete, data):
             c.setFont("Helvetica", 8.5)
             c.drawString(60*mm, y_info - (i*4.5)*mm, str(val))
 
-        labels_droite = ["Déclaration C n° :", "Déclaration UC n° :", "Escale n° :", "Rubrique :", "Colisage :", "Poids Brut :", "Valeur Douane :"]
+        mode = f.get("mode")  
+        label_declaration = "Déclaration E n° :" if mode == "export" else "Déclaration C n° :"
+
+
+        labels_droite = [label_declaration, "Déclaration UC n° :", "Escale n° :", "Rubrique :", "Colisage :", "Poids Brut :", "Valeur Douane :"]
         values_droite = [f.get('declaration_c'), f.get('declaration_uc'), f.get('escale'), f.get('rubrique'), f.get('colisage'), f.get('poids_brut') , f.get('valeur_douane')]
 
         for i, (label, val) in enumerate(zip(labels_droite, values_droite)):
@@ -106,7 +108,6 @@ def generer_facture_eden_dynamique(fichier_entete, data):
             c.setFont("Helvetica", 8.5)
             c.drawString(155*mm, y_info - (i*4.5)*mm, str(val))
 
-        # --- 4. SECTIONS DYNAMIQUES ---
         def draw_section_lines(title, items, y_start):
             if not items: return y_start
             c.setFont("Helvetica-Bold", 9.5)
@@ -116,7 +117,7 @@ def generer_facture_eden_dynamique(fichier_entete, data):
             curr_y = y_start - 6*mm
             c.setFont("Helvetica", 9)
             for item in items:
-                if curr_y < 40*mm: break # Sécurité bas de page
+                if curr_y < 40*mm: break 
                 c.drawString(25*mm, curr_y, item['label'])
                 c.drawRightString(185*mm, curr_y, f"{item['montant']:.3f}")
                 curr_y -= 4.5*mm
@@ -127,7 +128,6 @@ def generer_facture_eden_dynamique(fichier_entete, data):
         y_current = draw_section_lines("TRANSIT", data['lignes'].get('transit', []), y_current)
         y_current = draw_section_lines("TRANSPORT", data['lignes'].get('transport', []), y_current)
 
-        # --- 5. BLOC TOTAUX ---
         t = data['totaux']
         y_tot = y_current - 10*mm
     
@@ -149,7 +149,7 @@ def generer_facture_eden_dynamique(fichier_entete, data):
         c.drawString(115*mm, y_tot - 2*mm, "Total Facture en TND")
         c.drawRightString(185*mm, y_tot - 2*mm, f"{t.get('total_final', 0):.3f}")
 
-        # --- 6. PIED DE PAGE ---
+     
         y_footer = y_tot - 15*mm
         c.setFont("Helvetica-Oblique", 9.5)
         c.drawString(25*mm, y_footer, "Total en votre aimable règlement :")
@@ -161,7 +161,6 @@ def generer_facture_eden_dynamique(fichier_entete, data):
         c.save()
         packet.seek(0)
 
-        # Fusion avec le fond PDF
         if not os.path.exists(fichier_entete):
             return {"success": False, "error": f"Fichier {fichier_entete} absent"}
 

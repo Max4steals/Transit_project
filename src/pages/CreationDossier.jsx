@@ -10,6 +10,7 @@ export default function DossierPage() {
     const [showDropdown, setShowDropdown] = useState(false);
     const [clientSearch, setClientSearch] = useState("");
     const [loadingClients, setLoadingClients] = useState(false);
+    const [lastDossierNo, setLastDossierNo] = useState("");
 
     const [formData, setFormData] = useState({
         dossier_no: "",
@@ -56,9 +57,20 @@ export default function DossierPage() {
 
             setClients(data || []);
             setFilteredClients(data || []);
+
+            const { data: dossierData, error: dossierError } = await supabase
+                .from("dossiers")
+                .select("dossier_no")
+                .order("created_at", { ascending: false })
+                .limit(1);
+
+            if (dossierError) throw dossierError;
+
+            if (dossierData && dossierData.length > 0) {
+                setLastDossierNo(dossierData[0].dossier_no);
+            }
         } catch (error) {
             console.error("Erreur chargement clients:", error);
-            alert("Erreur lors du chargement des clients");
         } finally {
             setLoadingClients(false);
         }
@@ -185,6 +197,9 @@ export default function DossierPage() {
             <main className="flex-1 bg-zinc-50 overflow-y-auto min-h-screen">
                 <header className="h-20 bg-white border-b border-zinc-100 flex items-center px-10 sticky top-0 z-20">
                     <h1 className="text-xl font-bold tracking-tight uppercase">Saisie Dossier de Transit</h1>
+                    <h3 className="text-xl font-bold tracking-tight uppercase">
+                        (Le dernier dossier créer numero {lastDossierNo || ""})
+                    </h3>
                 </header>
 
                 <div className="p-10 flex justify-center">

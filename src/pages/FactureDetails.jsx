@@ -50,13 +50,27 @@ export default function FactureDetails() {
 
         if (error) return console.error(error);
 
-        const { data: clientData } = await supabase
-            .from("clients")
-            .select("*")
-            .ilike("nom_client", data.destinataire.trim());
+        const nomClientRecherche =
+            data.mode === "import"
+                ? data.destinataire
+                : data.mode === "export"
+                    ? data.expediteur
+                    : null;
+
+        let clientData = [];
+
+        if (nomClientRecherche) {
+            const { data: clients } = await supabase
+                .from("clients")
+                .select("*")
+                .ilike("nom_client", nomClientRecherche.trim());
+
+            clientData = clients || [];
+        }
 
         setDossier({
             ...data,
+            clientNom: nomClientRecherche || "",
             clientInfo: clientData?.[0] || {},
             dbFactureId: data.factures?.[0]?.id || null
         });
@@ -143,20 +157,36 @@ export default function FactureDetails() {
             setLoading(true);
             const nextInvoiceNumber = await getNextInvoiceNumber();
 
+
+            const nomClient =
+                dossier.mode === "import"
+                    ? dossier.destinataire
+                    : dossier.mode === "export"
+                        ? dossier.expediteur
+                        : "";
+
+            const date_arrive_sortie =
+                dossier.mode === "import"
+                    ? dossier.date_dest
+                    : dossier.mode === "export"
+                        ? dossier.date_emb
+                        : "";
+
+
             const dataJson = {
                 facture: {
                     numero: nextInvoiceNumber,
                     date: new Date().toLocaleDateString('fr-FR'),
                     dossier_no: dossier_no,
+                    mode: dossier.mode,
                     navire: dossier.navire || "",
-                    date_arrivee: dossier.date_dest,
+                    date_arrivee: date_arrive_sortie,
                     conteneur: dossier.ctu_lta?.split('"')[0] || "",
                     marque: dossier.ctu_lta?.includes('"') ? dossier.ctu_lta.split('"').slice(1).join('"') : "",
                     declaration_c:
                         dossier.declaration_no && dossier.date_declaration
                             ? `${dossier.declaration_no} du ${dossier.date_declaration}`
                             : "",
-
                     declaration_uc: declarationUC,
                     escale: dossier.escale || "",
                     rubrique: dossier.rubrique || "",
@@ -166,7 +196,7 @@ export default function FactureDetails() {
                 },
                 client: {
                     code_client: dossier.clientInfo?.code_client || "",
-                    nom: dossier.destinataire || "",
+                    nom: nomClient,
                     adresse: dossier.clientInfo?.adresse || "",
                     code_tva: dossier.clientInfo?.code_tva || ""
                 },
@@ -180,7 +210,6 @@ export default function FactureDetails() {
                     total_final: totalFinal
                 }
             };
-
             // Sauvegarde Facture
             let factureResult;
             if (dossier.factures?.[0]) {
@@ -274,7 +303,11 @@ export default function FactureDetails() {
                             <img src={logo} alt="Logo" className="w-72" />
                             <div className="border border-zinc-300 p-4 w-[380px] leading-relaxed">
                                 <div className="text-[11px]">Code client : {dossier.clientInfo.code_client}</div>
-                                <div className="font-bold text-[15px] my-1 uppercase">Client : {dossier.destinataire}</div>
+                                <div className="font-bold text-[15px] my-1 uppercase">Client : {
+                                    dossier.mode === "export"
+                                        ? dossier.expediteur
+                                        : dossier.destinataire
+                                }</div>
                                 <div className="text-[11px]">Adresse : {dossier.clientInfo.adresse}</div>
                                 <div className="text-[11px]">Code TVA : {dossier.clientInfo.code_tva}</div>
                             </div>
@@ -296,7 +329,15 @@ export default function FactureDetails() {
 
                                 <InfoRow label="Navire :" value={dossier.navire} isEditable={true} />
 
-                                <InfoRow label="Date d'arrivée :" value={dossier.date_dest} isEditable={true} />
+                                <InfoRow
+                                    label={dossier.mode === "export"
+                                        ? "Date de sortie :"
+                                        : "Date d'arrivée :"}
+                                    value={dossier.mode === "export"
+                                        ? dossier.date_emb
+                                        : dossier.date_dest}
+                                    isEditable={true}
+                                />
 
                                 <InfoRow label="Conteneur :" value={dossier.ctu_lta?.split('"')[0] + '"'} isEditable={true} />
 
@@ -308,9 +349,10 @@ export default function FactureDetails() {
 
                             <div className="space-y-1">
 
-                                <InfoRow label="Déclaration C n° :" value={dossier.declaration_no && dossier.date_declaration
+                                <InfoRow label={dossier.mode === "export" ? "Déclaration E n° :" : "Déclaration C n°"} value={dossier.declaration_no && dossier.date_declaration
                                     ? `${dossier.declaration_no} du ${dossier.date_declaration}`
                                     : ""} isEditable={true} />
+
 
                                 <div className="flex items-center">
 

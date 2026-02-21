@@ -46,15 +46,29 @@ export default function FactureModifier() {
             const factureExistante = data.factures[0];
             const json = factureExistante.data_json;
 
-            const { data: clientData } = await supabase
-                .from("clients")
-                .select("*")
-                .ilike("nom_client", data.destinataire.trim());
+            const nomClientRecherche =
+                data.mode === "import"
+                    ? data.destinataire
+                    : data.mode === "export"
+                        ? data.expediteur
+                        : null;
+
+            let clientData = [];
+
+            if (nomClientRecherche) {
+                const { data: clients } = await supabase
+                    .from("clients")
+                    .select("*")
+                    .ilike("nom_client", nomClientRecherche.trim());
+
+                clientData = clients || [];
+            }
 
             setDossier({
                 ...data,
+                clientNom: nomClientRecherche || "",
                 clientInfo: clientData?.[0] || {},
-                dbFactureId: factureExistante.id
+                dbFactureId: data.factures?.[0]?.id || null
             });
 
             if (json.lignes) setInvoiceRows(json.lignes);
@@ -115,14 +129,29 @@ export default function FactureModifier() {
         try {
             setSaving(true);
 
+            const nomClient =
+                dossier.mode === "import"
+                    ? dossier.destinataire
+                    : dossier.mode === "export"
+                        ? dossier.expediteur
+                        : "";
+
+            const date_arrive_sortie =
+                dossier.mode === "import"
+                    ? dossier.date_dest
+                    : dossier.mode === "export"
+                        ? dossier.date_emb
+                        : "";
+
             // Reconstruction du JSON selon le format du 2ème code
             const updatedDataJson = {
                 facture: {
                     numero: invoiceNumber,
-                    date: new Date().toISOString(),
+                    date: new Date().toLocaleDateString('fr-FR'),
                     dossier_no: dossier_no,
+                    mode: dossier.mode,
                     navire: dossier.navire || "",
-                    date_arrivee: dossier.date_dest,
+                    date_arrivee: date_arrive_sortie,
                     conteneur: dossier.ctu_lta?.split('"')[0] || "",
                     marque: dossier.ctu_lta?.includes('"') ? dossier.ctu_lta.split('"').slice(1).join('"') : "",
                     declaration_c: dossier.declaration_no && dossier.date_declaration
@@ -138,7 +167,7 @@ export default function FactureModifier() {
                 },
                 client: {
                     code_client: dossier.clientInfo?.code_client || "",
-                    nom: dossier.destinataire || "",
+                    nom: nomClient,
                     adresse: dossier.clientInfo?.adresse || "",
                     code_tva: dossier.clientInfo?.code_tva || ""
                 },
@@ -220,7 +249,11 @@ export default function FactureModifier() {
                             <img src={logo} alt="Logo" className="w-72" />
                             <div className="border border-zinc-300 p-4 w-[380px] leading-relaxed">
                                 <div className="text-[11px]">Code client : {dossier.clientInfo.code_client}</div>
-                                <div className="font-bold text-[15px] my-1 uppercase">Client : {dossier.destinataire}</div>
+                                <div className="font-bold text-[15px] my-1 uppercase">Client : {
+                                    dossier.mode === "export"
+                                        ? dossier.expediteur
+                                        : dossier.destinataire
+                                }</div>
                                 <div className="text-[11px]">Adresse : {dossier.clientInfo.adresse}</div>
                                 <div className="text-[11px]">Code TVA : {dossier.clientInfo.code_tva}</div>
                             </div>
@@ -234,15 +267,23 @@ export default function FactureModifier() {
                                 <InfoRow label="Facture n° :" value={invoiceNumber} />
                                 <InfoRow label="Dossier import n° :" value={dossier.dossier_no} />
                                 <InfoRow label="Navire :" value={dossier.navire} />
-                                <InfoRow label="Date d'arrivée :" value={dossier.date_dest} />
+                                <InfoRow
+                                    label={dossier.mode === "export"
+                                        ? "Date de sortie :"
+                                        : "Date d'arrivée :"}
+                                    value={dossier.mode === "export"
+                                        ? dossier.date_emb
+                                        : dossier.date_dest}
+                                    isEditable={true}
+                                />
                                 <InfoRow label="Conteneur :" value={dossier.ctu_lta?.split('"')[0] + '"'} />
                                 <InfoRow label="Marque :" value={dossier.ctu_lta?.includes('"') ? dossier.ctu_lta.split('"').slice(1).join('"') : ""} />
                             </div>
 
                             <div className="space-y-1">
-                                <InfoRow label="Déclaration C n° :" value={dossier.declaration_no && dossier.date_declaration
+                                <InfoRow label={dossier.mode === "export" ? "Déclaration E n° :" : "Déclaration C n°"} value={dossier.declaration_no && dossier.date_declaration
                                     ? `${dossier.declaration_no} du ${dossier.date_declaration}`
-                                    : ""} />
+                                    : ""} isEditable={true} />
                                 <div className="flex items-center">
                                     <span className="w-36 font-bold">Déclaration UC :</span>
                                     <input
